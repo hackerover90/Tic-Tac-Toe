@@ -49,16 +49,21 @@ function Game() {
     let gameOver = false
     let players = [
         {
-            playerName: 'Player 1',
-            value: 1
+            playerName: '',
+            value: 'X'
         },
         {
-            playerName: 'Player 2',
-            value: 2
+            playerName: '',
+            value: 'O'
         }
     ]
 
     let currentPlayer = players[0]
+
+    const updatePlayerName = (name1, name2) => {
+        players[0].playerName = name1
+        players[1].playerName = name2
+    }
 
     const switchPlayer = () => {
         currentPlayer = currentPlayer === players[0] ? players[1] : players[0]
@@ -76,7 +81,7 @@ function Game() {
 
     const checkColumn = (boards, row) => {
         for (let i = 0; i < boards.length; i++) {
-            if (board.getBoardValue(row, i) != getCurrentPlayer().value) {
+            if (board.getBoardValue(+row, i) != getCurrentPlayer().value) {
                 return false
             }
             if (i == boards.length - 1) {
@@ -87,7 +92,7 @@ function Game() {
 
     const checkRow = (boards, column) => {
         for (let i = 0; i < boards.length; i++) {
-            if (board.getBoardValue(i, column) != getCurrentPlayer().value) {
+            if (board.getBoardValue(i, +column) != getCurrentPlayer().value) {
                 return false
             }
             if (i == boards.length - 1) {
@@ -111,9 +116,9 @@ function Game() {
     }
 
     const checkInverseDiag = (boards, row, column) => {
-        if (row + column == 2) {
+        if (+row + +column == 2) {
             for (let i = 0; i < boards.length; i++) {
-                if (board.getBoardValue(i, (boards.length - 1) - i) != getCurrentPlayer().value) {
+                if (board.getBoardValue(i, ((boards.length - 1) - i)) != getCurrentPlayer().value) {
                     return false
                 }
                 if (i == boards.length - 1) {
@@ -126,7 +131,7 @@ function Game() {
 
     const victoryCheck = (row, column) => {
         let boards = board.getBoard()
-        return checkColumn(boards, row, column) || checkRow(boards, row, column) || checkDiag(boards, row, column) || checkInverseDiag(boards, row, column)      
+        return checkColumn(boards, row) || checkRow(boards, column) || checkDiag(boards, row, column) || checkInverseDiag(boards, row, column)      
     }
 
     function playRound(row, column) {
@@ -172,16 +177,116 @@ function Game() {
         }
     }
 
-    printGame()
     return {
         getCurrentPlayer,
         printGame,
         playRound,
         getBoard: board.getBoard,
-        test
+        test,
+        updatePlayerName
     }
 }
 
+function ScreenController() {
+    let game = Game()
+    
 
+    let br = document.createElement('br')
+    let br1 = document.createElement('br')
+    let divPlayerTurn = document.querySelector('.turn')
+    let playerNameForm = document.createElement('form')
+    let div1 = document.createElement('div')
+    let player1Label = document.createElement('label')
+    let player1Input = document.createElement('input')
+    let div2 = document.createElement('div')
+    let player2Label = document.createElement('label')
+    let player2Input = document.createElement('input')
+    let playerNameFormButton = document.createElement('button')
+    let divBoard = document.querySelector('.board')
+    let div0 = document.createElement('div')
 
-Game()
+    //container.textContent = 'Tic Tac Toe'
+    div0.textContent = 'Please fill in the players name'
+    div0.classList.add('mb-3', 'fw-bold', 'text-dark')
+    div1.classList.add('mb-3')
+    div2.classList.add('mb-3')
+    player1Label.classList.add('form-label')
+    player1Label.setAttribute('for', 'player1')
+    player1Label.textContent = 'Player 1 Name'
+    player1Input.classList.add('form-control')
+    player1Input.setAttribute('type', 'text')
+    player1Input.setAttribute('id', 'player1')
+    player1Input.setAttribute('value', 'Player 1')
+    player1Input.required = true
+    player2Label.classList.add('form-label')
+    player2Label.setAttribute('for', 'player2')
+    player2Label.textContent = 'Player 2 Name'
+    player2Input.classList.add('form-control')
+    player2Input.setAttribute('type', 'text')
+    player2Input.setAttribute('id', 'player2')
+    player2Input.setAttribute('value', 'Player 2')
+    player2Input.required = true
+    playerNameFormButton.classList.add('btn', 'btn-primary')
+    playerNameFormButton.setAttribute('type', 'submit')
+    playerNameFormButton.textContent = 'Submit'
+    playerNameForm.setAttribute('id', 'playerNames')
+
+    divPlayerTurn.append(div0, playerNameForm)
+    div1.append(player1Label, player1Input)
+    div2.append(player2Label, player2Input)
+    playerNameForm.append(div1, div2, playerNameFormButton)
+
+    const updateScreen = () => {
+            playerNameForm.remove()
+            let currentPlayer = game.getCurrentPlayer()
+            let board = game.getBoard()
+            div0.textContent = `It is ${currentPlayer.playerName}'s turn.`
+            divBoard.textContent = ""
+
+            board.forEach((row, index) => {
+                ticTacToeDiv = document.createElement('div')
+                ticTacToeDiv.classList.add('d-flex')
+                row.forEach((player, col) => {
+                    const playerButton = document.createElement('button')
+                    playerButton.classList.add('cell', 'player', 'col')
+                    playerButton.dataset.row = index
+                    playerButton.dataset.col = col
+                    if (player.getPlayerValue() == 0) {
+                        playerButton.textContent = ' '
+                    } else {
+                        playerButton.textContent = player.getPlayerValue()
+                    }
+                    ticTacToeDiv.appendChild(playerButton)
+                    divBoard.appendChild(ticTacToeDiv)
+                })
+            });
+        }
+
+    divBoard.addEventListener('click', (e) => {
+        const selectedButton = e.target
+        const selectedButtonRow = selectedButton.dataset.row
+        const selectedButtonCol = selectedButton.dataset.col
+        if (!selectedButton) return
+        game.playRound(selectedButtonRow, selectedButtonCol)
+        updateScreen()
+    })
+    
+    playerNameForm.addEventListener('submit', (e) => {
+        e.preventDefault()
+        let player1Name = player1Input.value
+        let player2Name = player2Input.value
+        if (player1Name == player2Name) {
+            div0.textContent = Error('Players must have different names')
+            div0.classList.remove('text-dark')
+            div0.classList.add('text-danger')
+            return
+        } else {
+            game.updatePlayerName(player1Name, player2Name)
+            updateScreen()
+        }
+    })
+
+    
+}
+
+ScreenController()

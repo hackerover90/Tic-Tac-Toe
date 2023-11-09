@@ -1,0 +1,12 @@
+.cell {
+    background-color: aqua;
+    padding: 0;
+    margin: 0;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+}
+
+.board {
+    width: 30rem;
+}
