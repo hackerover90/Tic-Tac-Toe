@@ -45,6 +45,7 @@ function Gameboard() {
 
 function Game() {
     const board = Gameboard()
+    let moveNum = 0;
     let players = [
         {
             playerName: 'Player 1',
@@ -125,18 +126,26 @@ function Game() {
     }
 
     function playRound(row, column) {
-        if (board.getBoardValue(row, column) == 0) {
-            board.setBoardValue(row, column, getCurrentPlayer().value)
-            console.log(`Setting ${getCurrentPlayer().playerName}'s value into board`)
-            if (victoryCheck(row, column, getCurrentPlayer().value) == true) {
-                console.log('Player ', getCurrentPlayer().value, ' has won the game!')
+        if (moveNum < 10) {
+            if (board.getBoardValue(row, column) == 0) {
+                board.setBoardValue(row, column, getCurrentPlayer().value)
+                moveNum += 1
+                console.log(`Setting ${getCurrentPlayer().playerName}'s value into board`)
+                
+                if (victoryCheck(row, column, getCurrentPlayer().value) == true) {
+                    console.log('Player ', getCurrentPlayer().value, ' has won the game!')
+                }
+
+                if (moveNum == 9) {
+                    console.log('Game has tied!')
+                }
+
+                switchPlayer()
+                printGame()
+            } else {
+                console.error('Already taken');
             }
-            switchPlayer()
-            printGame()
-        } else {
-            console.error('Already taken');
         }
-        
     }
 
     printGame()
