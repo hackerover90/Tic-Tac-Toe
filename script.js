@@ -46,6 +46,7 @@ function Gameboard() {
 function Game() {
     const board = Gameboard()
     let moveNum = 0;
+    let gameOver = false
     let players = [
         {
             playerName: 'Player 1',
@@ -67,7 +68,10 @@ function Game() {
 
     function printGame() {
         board.printBoard()
-        console.log(`It is ${getCurrentPlayer().playerName}'s turn.`)
+        if (gameOver == false) {
+            console.log(`It is ${getCurrentPlayer().playerName}'s turn.`)
+        }
+        
     }
 
     const checkColumn = (boards, row) => {
@@ -126,24 +130,44 @@ function Game() {
     }
 
     function playRound(row, column) {
-        if (moveNum < 10) {
+        if (gameOver == false) {
             if (board.getBoardValue(row, column) == 0) {
                 board.setBoardValue(row, column, getCurrentPlayer().value)
                 moveNum += 1
                 console.log(`Setting ${getCurrentPlayer().playerName}'s value into board`)
                 
                 if (victoryCheck(row, column, getCurrentPlayer().value) == true) {
+                    gameOver = true
                     console.log('Player ', getCurrentPlayer().value, ' has won the game!')
+                    printGame()
+                    return gameOver
                 }
 
                 if (moveNum == 9) {
+                    gameOver = true
                     console.log('Game has tied!')
+                    printGame()
+                    return gameOver
                 }
 
                 switchPlayer()
                 printGame()
             } else {
                 console.error('Already taken');
+            }
+        }
+        if (gameOver == true) {
+            let gameOverMessage = 'Game is over!'
+            console.log(gameOverMessage)
+            return gameOverMessage
+        }
+        
+    }
+
+    function test() {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                playRound(i, j)
             }
         }
     }
@@ -153,8 +177,11 @@ function Game() {
         getCurrentPlayer,
         printGame,
         playRound,
-        getBoard: board.getBoard
+        getBoard: board.getBoard,
+        test
     }
 }
+
+
 
 Game()
