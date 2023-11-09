@@ -46,7 +46,9 @@ function Gameboard() {
 function Game() {
     const board = Gameboard()
     let moveNum = 0;
-    let gameOver = false
+    let endGame = {gameOver: false, tie: false}
+    //let gameOver = false
+    //let tie = false
     let players = [
         {
             playerName: '',
@@ -57,6 +59,8 @@ function Game() {
             value: 'O'
         }
     ]
+
+    const getGameStatus = () => endGame
 
     let currentPlayer = players[0]
 
@@ -73,7 +77,7 @@ function Game() {
 
     function printGame() {
         board.printBoard()
-        if (gameOver == false) {
+        if (endGame.gameOver == false) {
             console.log(`It is ${getCurrentPlayer().playerName}'s turn.`)
         }
         
@@ -135,24 +139,25 @@ function Game() {
     }
 
     function playRound(row, column) {
-        if (gameOver == false) {
+        if (endGame.gameOver == false) {
             if (board.getBoardValue(row, column) == 0) {
                 board.setBoardValue(row, column, getCurrentPlayer().value)
                 moveNum += 1
                 console.log(`Setting ${getCurrentPlayer().playerName}'s value into board`)
                 
                 if (victoryCheck(row, column, getCurrentPlayer().value) == true) {
-                    gameOver = true
+                    endGame.gameOver = true
                     console.log('Player ', getCurrentPlayer().value, ' has won the game!')
                     printGame()
-                    return gameOver
+                    return endGame
                 }
 
                 if (moveNum == 9) {
-                    gameOver = true
+                    endGame.gameOver = true
+                    endGame.tie = true
                     console.log('Game has tied!')
                     printGame()
-                    return gameOver
+                    return endGame
                 }
 
                 switchPlayer()
@@ -161,10 +166,10 @@ function Game() {
                 console.error('Already taken');
             }
         }
-        if (gameOver == true) {
+        if (endGame.gameOver == true) {
             let gameOverMessage = 'Game is over!'
             console.log(gameOverMessage)
-            return gameOverMessage
+            return endGame
         }
         
     }
@@ -183,16 +188,14 @@ function Game() {
         playRound,
         getBoard: board.getBoard,
         test,
-        updatePlayerName
+        updatePlayerName,
+        getGameStatus
     }
 }
 
 function ScreenController() {
     let game = Game()
     
-
-    let br = document.createElement('br')
-    let br1 = document.createElement('br')
     let divPlayerTurn = document.querySelector('.turn')
     let playerNameForm = document.createElement('form')
     let div1 = document.createElement('div')
@@ -205,7 +208,11 @@ function ScreenController() {
     let divBoard = document.querySelector('.board')
     let div0 = document.createElement('div')
 
-    //container.textContent = 'Tic Tac Toe'
+    let restart = document.createElement('button')
+        restart.classList.add('btn', 'btn-primary')
+        restart.setAttribute('type', 'button')
+        restart.textContent = 'Restart'
+
     div0.textContent = 'Please fill in the players name'
     div0.classList.add('mb-3', 'fw-bold', 'text-dark')
     div1.classList.add('mb-3')
@@ -238,9 +245,18 @@ function ScreenController() {
 
     const updateScreen = () => {
             playerNameForm.remove()
+            let endGame = game.getGameStatus()
             let currentPlayer = game.getCurrentPlayer()
             let board = game.getBoard()
-            div0.textContent = `It is ${currentPlayer.playerName}'s turn.`
+            if (endGame.gameOver == true && endGame.tie == false) {
+                div0.textContent = `${currentPlayer.playerName} has won!`
+            } else if (endGame.gameOver == true && endGame.tie == true) {
+                div0.textContent = `Game has tied!`
+            } else {
+                div0.textContent = `It is ${currentPlayer.playerName}'s turn.`
+            }
+            
+            
             divBoard.textContent = ""
 
             board.forEach((row, index) => {
@@ -267,9 +283,16 @@ function ScreenController() {
         const selectedButtonRow = selectedButton.dataset.row
         const selectedButtonCol = selectedButton.dataset.col
         if (!selectedButton) return
-        game.playRound(selectedButtonRow, selectedButtonCol)
+        let end = game.playRound(selectedButtonRow, selectedButtonCol)
+        
+        divPlayerTurn.appendChild(restart)
+        divPlayerTurn.classList.add('mb-3', 'd-flex', 'justify-content-between', 'align-content-center')
+
         updateScreen()
+        return end
     })
+
+    restart.addEventListener("click", () => {window.location.reload()})
     
     playerNameForm.addEventListener('submit', (e) => {
         e.preventDefault()

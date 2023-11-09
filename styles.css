@@ -5,6 +5,7 @@
     width: 150px;
     height: 150px;
     cursor: pointer;
+    font-size: 5rem;
 }
 
 .board {
