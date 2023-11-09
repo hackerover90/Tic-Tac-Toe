@@ -304,6 +304,7 @@ function ScreenController() {
             div0.classList.add('text-danger')
             return
         } else {
+            div0.classList.add('text-dark')
             game.updatePlayerName(player1Name, player2Name)
             updateScreen()
         }
